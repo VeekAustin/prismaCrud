@@ -1,36 +1,102 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Prisma CRUD — Next.js + MongoDB
+A learning project demonstrating CRUD operations, and 1-to-1 / 1-to-many relationships, using Prisma ORM with MongoDB, exposed through Next.js App Router serverless API routes.
+Tech Stack
+Next.js (App Router) — serverless API routes
+Prisma ORM — database toolkit and query builder
+MongoDB (Atlas) — database
+TypeScript
+pnpm — package manager
+Data Model
+User — base entity, has one Kyc record and many Post records
+Kyc — 1-to-1 with User (enforced via a @unique foreign key), holds identity/verification data (BVN, status)
+Post — 1-to-many with User (one user can author many posts)
+Getting Started
+1. Clone and install
+git clone (https://github.com/VeekAustin/prismaCrud)
+cd prisma-crud
+pnpm install
 
-## Getting Started
+2. Approve build scripts (pnpm-specific)
+pnpm blocks postinstall scripts by default. Run:
+pnpm approve-builds
 
-First, run the development server:
+Select all packages (press a, then Enter) to allow Prisma's engine binaries to build correctly.
+3. Set up environment variables
+Create a .env file in the project root:
+DATABASE_URL="mongodb+srv://<username>:<password>@<cluster-url>/<database-name>?retryWrites=true&w=majority"
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
+Use your MongoDB Atlas Database User credentials (Database Access tab), not your Atlas login
+Make sure the database name is included in the path (between .mongodb.net/ and ?)
+URL-encode any special characters in your password (@ → %40, etc.)
+4. Push the schema and generate the client
+pnpm prisma db push
+pnpm prisma generate
+
+5. Run the dev server
 pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+App runs at http://localhost:3000.
+API Endpoints
+All routes accept/return JSON. Update and delete operations take id in the request body, not the URL.
+Users — /api/users
+Method
+Description
+Body
+GET
+List all users (with related posts)
+—
+POST
+Create a user
+{ name, email, ... }
+PUT
+Update a user
+{ id, ...fieldsToUpdate }
+DELETE
+Delete a user
+{ id }
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Posts — /api/posts
+Method
+Description
+Body
+GET
+List all posts (with author)
+—
+POST
+Create a post
+{ title, content, authorId }
+PUT
+Update a post
+{ id, ...fieldsToUpdate }
+DELETE
+Delete a post
+{ id }
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Kyc — /api/kyc
+Method
+Description
+Body
+GET
+List all Kyc records (with user)
+—
+POST
+Create a Kyc record
+{ bvn, status, userId }
+PUT
+Update a Kyc record
+{ id, ...fieldsToUpdate }
+DELETE
+Delete a Kyc record
+{ id }
 
-## Learn More
+Notes on MongoDB + Prisma
+Every model requires exactly one @id field, mapped to _id, typed @db.ObjectId
+BigInt is not supported on MongoDB — use Int, Float, or String instead
+No migrate dev on MongoDB (schemaless) — use db push to sync schema changes
+1-to-1 vs 1-to-many is controlled by whether the foreign key field has @unique
+What This Project Demonstrates
+Setting up Prisma with MongoDB from scratch
+Modeling 1-to-1 and 1-to-many relationships in a schema
+Building CRUD serverless functions with Next.js Route Handlers
+Handling Prisma-specific errors (e.g. unique constraint violations, P2002)
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
