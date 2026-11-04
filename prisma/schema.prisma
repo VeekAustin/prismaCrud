@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -30,13 +30,18 @@ model User {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   email     String   @unique
-  age       Int
+  age       Int?
   married   Boolean?
   address   Address?
   money     Float?
   hobbies   String[] @default([])
-  gender    IGender
+  gender    IGender?
+  password  String?  // null for Google users
+  image     String?
+  provider  String   @default("credentials")
+  role      String   @default("user")
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   kyc Kyc?
   posts Post[]
